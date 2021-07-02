@@ -22,6 +22,12 @@ final class Chapter02_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
     private let notiName: Notification.Name = .init("MyNotification")
     
     override func viewDidLoad() {
@@ -36,6 +42,7 @@ final class Chapter02_ViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -46,6 +53,11 @@ final class Chapter02_ViewController: UIViewController {
         secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
         secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -79,6 +91,18 @@ extension Chapter02_ViewController {
             subscription.cancel()
         }
     }
+    
+    private func justTest1() {
+        example(of: "Just") {
+            let just: Just<String> = .init("Hello World!")
+            
+            _ = just.sink(receiveCompletion: { failure in
+                print("Received completion", failure)
+            }, receiveValue: {
+                print("Received value", $0)
+            })
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -89,5 +113,9 @@ extension Chapter02_ViewController {
     
     @objc private func didTapSecondEx() {
         helloSubscriber()
+    }
+    
+    @objc private func didTapThirdEx() {
+        justTest1()
     }
 }
