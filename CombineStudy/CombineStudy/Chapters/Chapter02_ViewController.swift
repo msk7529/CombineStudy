@@ -40,6 +40,12 @@ final class Chapter02_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var sixthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "sixthExBtn")
+        button.addTarget(self, action: #selector(didTapSixthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private let notiName: Notification.Name = .init("MyNotification")
     
     override func viewDidLoad() {
@@ -57,6 +63,7 @@ final class Chapter02_ViewController: UIViewController {
         self.view.addSubview(thirdExBtn)
         self.view.addSubview(fourthExBtn)
         self.view.addSubview(fifthExBtn)
+        self.view.addSubview(sixthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -82,6 +89,11 @@ final class Chapter02_ViewController: UIViewController {
         fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
         fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        sixthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
+        sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -118,10 +130,10 @@ extension Chapter02_ViewController {
     
     private func justTest1() {
         example(of: "Just") {
-            // Just: 각각의 subscriber에 대해 단 한개의 출력을 emit하는 Publisher.
+            // Just: 각각의 subscriber에 대해 단 한개의 출력을 emit하고 종료되는 Publisher.
             let just: Just<String> = .init("Hello World!")
             
-            // sink operator는 publisher가 방출한 모든 값들을 계속 받을 수 있다.
+            // sink operator는 publisher가 emit한 모든 값들을 계속 받을 수 있다.
             // receiveValue 클로저가 먼저 호출되고, 그 다음 receiveCompletion 클로저가 호출된다.
             _ = just.sink(receiveCompletion: { failure in
                 print("Received completion", failure)
@@ -179,6 +191,40 @@ extension Chapter02_ViewController {
             
         }
     }
+    
+    private func customSubscriber() {
+        example(of: "Custom Subscriber") {
+            let publisher = (1...6).publisher
+            
+            final class IntSubscriber: Subscriber {
+
+                typealias Input = Int
+                typealias Failure = Never
+                
+                func receive(subscription: Subscription) {
+                    // publisher에 의해 호출되며, subscriber은 최대 3개의 값을 수신할 수 있음을 지정.
+                    // 이 메서드가 불린뒤 아래의 receive(_ input:) 메서드가 호출된다.
+                    subscription.request(.max(3))
+                }
+                
+                func receive(_ input: Int) -> Subscribers.Demand {
+                    print("Received value", input)
+                    /*return .none -> 아래의 completion이 호출되지 않는다.
+                     publisher는 6개의 값을 가지고 있는데, demand를 3으로 지정했기 떄문.
+                     .none은 .max(0)과 같다. */
+                    return .max(1)  // 메서드가 호출될 때마다 max값을 1씩 증가시킨다.
+                }
+                
+                func receive(completion: Subscribers.Completion<Never>) {
+                    print("Received completion", completion)
+                }
+            }
+            
+            let subscriber: IntSubscriber = .init()
+            
+            publisher.subscribe(subscriber)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -201,5 +247,9 @@ extension Chapter02_ViewController {
     
     @objc private func didTapFifthEx() {
         republishingWithAssign()
+    }
+    
+    @objc private func didTapSixthEx() {
+        customSubscriber()
     }
 }
