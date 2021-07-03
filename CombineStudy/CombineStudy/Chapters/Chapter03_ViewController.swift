@@ -58,6 +58,12 @@ final class Chapter03_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var challengeBtn: commonBtn = {
+        let button: commonBtn = .init(title: "challenge")
+        button.addTarget(self, action: #selector(didTapChallenge), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -78,6 +84,7 @@ final class Chapter03_ViewController: UIViewController {
         self.view.addSubview(sixthExBtn)
         self.view.addSubview(seventhExBtn)
         self.view.addSubview(eighthExBtn)
+        self.view.addSubview(challengeBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -118,6 +125,11 @@ final class Chapter03_ViewController: UIViewController {
         eighthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.trailingAnchor, constant: 30).isActive = true
         eighthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         eighthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        challengeBtn.topAnchor.constraint(equalTo: eighthExBtn.topAnchor).isActive = true
+        challengeBtn.leadingAnchor.constraint(equalTo: eighthExBtn.trailingAnchor, constant: 30).isActive = true
+        challengeBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        challengeBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func quadrantOf(x: Int, y: Int) -> String {
@@ -244,6 +256,33 @@ extension Chapter03_ViewController {
             .sink(receiveValue: { print($0) })
             .store(in: &subscriptions)
     }
+    
+    private func challenge() {
+        example(of: "Create a phone number lookup") {
+            let subject = PassthroughSubject<String, Never>()
+            
+            subject
+                .map(Chapter03_Challenge.convert(phoneNumber:))   // string을 int?로 변환
+                .replaceNil(with: 0)
+                .collect(10)    // 원소 열개를 갖는 [Int]로 변환
+                .map(Chapter03_Challenge.format(digits:))
+                .map(Chapter03_Challenge.dial(phoneNumber:))
+                .sink { print($0) }
+                .store(in: &subscriptions)
+            
+            "0!1234567".forEach {
+                subject.send(String($0))
+            }
+            
+            "4085554321".forEach {
+                subject.send(String($0))
+            }
+            
+            "A1BJKLDGEH".forEach {
+                subject.send("\($0)")
+            }
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -278,6 +317,10 @@ extension Chapter03_ViewController {
     
     @objc private func didTapEighthEx() {
         scan()
+    }
+    
+    @objc private func didTapChallenge() {
+        challenge()
     }
 }
 
