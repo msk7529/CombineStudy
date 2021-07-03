@@ -34,6 +34,12 @@ final class Chapter03_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var fifthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fifthEx")
+        button.addTarget(self, action: #selector(didTapFifthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -50,6 +56,7 @@ final class Chapter03_ViewController: UIViewController {
         self.view.addSubview(secondExBtn)
         self.view.addSubview(thirdExBtn)
         self.view.addSubview(fourthExBtn)
+        self.view.addSubview(fifthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -70,6 +77,11 @@ final class Chapter03_ViewController: UIViewController {
         fourthExBtn.leadingAnchor.constraint(equalTo: firstExBtn.leadingAnchor).isActive = true
         fourthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         fourthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fifthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
+        fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func quadrantOf(x: Int, y: Int) -> String {
@@ -144,6 +156,24 @@ extension Chapter03_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func flatMap() {
+        // flatMap: 다수의 upstream publisher들을 하나의 downstream publisher로 평탄화 할 수 있다.
+        func decode(_ codes: [Int]) -> AnyPublisher<String, Never> {
+            Just(
+                codes.compactMap { code in
+                    guard (32...255).contains(code) else { return nil }
+                    return String(UnicodeScalar(code) ?? " ")
+                }.joined()
+            ).eraseToAnyPublisher() // 함수의 반환 유형과 일치하도록 publisher의 type을 지운다.
+        }
+        
+        [72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33].publisher
+            .collect()
+            .flatMap(decode)
+            .sink(receiveValue: { print($0) })
+            .store(in: &subscriptions)
+    }
 }
 
 // - MARK: Button Actions
@@ -162,6 +192,10 @@ extension Chapter03_ViewController {
     
     @objc private func didTapFourthEx() {
         tryMap()
+    }
+    
+    @objc private func didTapFifthEx() {
+        flatMap()
     }
 }
 
