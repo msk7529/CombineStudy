@@ -46,7 +46,15 @@ final class Chapter02_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var seventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "seventhExBtn")
+        button.addTarget(self, action: #selector(didTapSeventhEx), for: .touchUpInside)
+        return button
+    }()
+    
     private let notiName: Notification.Name = .init("MyNotification")
+    private var subscriptions: Set<AnyCancellable> = .init()
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,6 +72,7 @@ final class Chapter02_ViewController: UIViewController {
         self.view.addSubview(fourthExBtn)
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
+        self.view.addSubview(seventhExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -94,6 +103,11 @@ final class Chapter02_ViewController: UIViewController {
         sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
         sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        seventhExBtn.topAnchor.constraint(equalTo: fourthExBtn.bottomAnchor, constant: 30).isActive = true
+        seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
+        seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -225,6 +239,30 @@ extension Chapter02_ViewController {
             publisher.subscribe(subscriber)
         }
     }
+    
+    private func HelloFuture() {
+        // Future: Just와는 달리 단일값을 비동기적으로 생성한 다음 완료할 수 있는 Publisher
+        example(of: "Future") {
+            func futureIncrement(integer: Int, afterDelay delay: TimeInterval) -> Future<Int, Never> {
+                Future<Int, Never> { promise in
+                    print("Original") // subscrition이 발생하기 직전에 출력되는데, 이는 Future이 생성되는 즉시 실행되기 때문. 일반적인 publihser와 달리 subscriber가 필요하지 않다.
+                    
+                    DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
+                        promise(.success(integer + 1))
+                    }
+                }
+            }
+            
+            // var subscriptions: Set<AnyCancellable> = .init() 지역변수로 선언하면 아래의 print가 수행이 안됨.. 왜지? -> long-running 비동기 operations의 경우 subscription을 저장하지 않으면, 현재 코드 블럭이 종료되는 즉시 subscription이 취소된다고 하는데, 이 때문에 지역변수에 저장하면 안되는듯.
+
+            let future = futureIncrement(integer: 1, afterDelay: 3)
+            future.sink(receiveCompletion: { print($0) }, receiveValue: { print($0)} )
+                .store(in: &subscriptions)
+            future.sink(receiveCompletion: { print("Second", $0) }, receiveValue: { print("Second", $0) })
+                .store(in: &subscriptions)
+            // 첫번째, 두번째 subscription은 동일한 값을 받는다. Future은 promise를 다시 실행하지 않고 output을 공유하거나 replay한다.
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -251,5 +289,9 @@ extension Chapter02_ViewController {
     
     @objc private func didTapSixthEx() {
         customSubscriber()
+    }
+    
+    @objc private func didTapSeventhEx() {
+        HelloFuture()
     }
 }
