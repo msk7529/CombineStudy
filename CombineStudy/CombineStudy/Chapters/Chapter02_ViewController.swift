@@ -35,38 +35,44 @@ final class Chapter02_ViewController: UIViewController {
     }()
     
     private lazy var fifthExBtn: commonBtn = {
-        let button: commonBtn = .init(title: "fifthExBtn")
+        let button: commonBtn = .init(title: "fifthEx")
         button.addTarget(self, action: #selector(didTapFifthEx), for: .touchUpInside)
         return button
     }()
     
     private lazy var sixthExBtn: commonBtn = {
-        let button: commonBtn = .init(title: "sixthExBtn")
+        let button: commonBtn = .init(title: "sixthEx")
         button.addTarget(self, action: #selector(didTapSixthEx), for: .touchUpInside)
         return button
     }()
     
     private lazy var seventhExBtn: commonBtn = {
-        let button: commonBtn = .init(title: "seventhExBtn")
+        let button: commonBtn = .init(title: "seventhEx")
         button.addTarget(self, action: #selector(didTapSeventhEx), for: .touchUpInside)
         return button
     }()
     
     private lazy var eighthExBtn: commonBtn = {
-        let button: commonBtn = .init(title: "eighthExBtn")
+        let button: commonBtn = .init(title: "eighthEx")
         button.addTarget(self, action: #selector(didTapEighthEx), for: .touchUpInside)
         return button
     }()
     
     private lazy var ninethExBtn: commonBtn = {
-        let button: commonBtn = .init(title: "ninethExBtn")
+        let button: commonBtn = .init(title: "ninethEx")
         button.addTarget(self, action: #selector(didTapNinethEx), for: .touchUpInside)
         return button
     }()
     
     private lazy var tenthExBtn: commonBtn = {
-        let button: commonBtn = .init(title: "tenthExBtn")
+        let button: commonBtn = .init(title: "tenthEx")
         button.addTarget(self, action: #selector(didTapTenthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var eleventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eleventhEx")
+        button.addTarget(self, action: #selector(didTapEleventhEx), for: .touchUpInside)
         return button
     }()
     
@@ -94,6 +100,7 @@ final class Chapter02_ViewController: UIViewController {
         self.view.addSubview(eighthExBtn)
         self.view.addSubview(ninethExBtn)
         self.view.addSubview(tenthExBtn)
+        self.view.addSubview(eleventhExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -144,6 +151,11 @@ final class Chapter02_ViewController: UIViewController {
         tenthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.leadingAnchor).isActive = true
         tenthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         tenthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eleventhExBtn.topAnchor.constraint(equalTo: tenthExBtn.topAnchor).isActive = true
+        eleventhExBtn.leadingAnchor.constraint(equalTo: tenthExBtn.trailingAnchor, constant: 30).isActive = true
+        eleventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eleventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -417,6 +429,22 @@ extension Chapter02_ViewController {
             subject.send(6) // 구독자는 6을 받지 못함.
         }
     }
+    
+    private func typeErasure() {
+        example(of: "Type erasure") {
+            let subject = PassthroughSubject<Int, Never>()
+            
+            let publisher = subject.eraseToAnyPublisher()
+            // Type erasure을 사용하면 publisher에 대한 세부정보를 subscribers 또는 downstream publishers에게 숨길 수 있다.
+            
+            publisher.sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+            
+            subject.send(0)
+            
+            // publisher.send(1) 오류.
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -459,5 +487,9 @@ extension Chapter02_ViewController {
     
     @objc private func didTapTenthEx() {
         dynamicallyAdjustingDemand()
+    }
+    
+    @objc private func didTapEleventhEx() {
+        typeErasure()
     }
 }
