@@ -76,6 +76,12 @@ final class Chapter02_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var challengeBtn: commonBtn = {
+        let button: commonBtn = .init(title: "challenge")
+        button.addTarget(self, action: #selector(didTapChallenge), for: .touchUpInside)
+        return button
+    }()
+    
     private let notiName: Notification.Name = .init("MyNotification")
     private var subscriptions: Set<AnyCancellable> = .init()
 
@@ -101,6 +107,7 @@ final class Chapter02_ViewController: UIViewController {
         self.view.addSubview(ninethExBtn)
         self.view.addSubview(tenthExBtn)
         self.view.addSubview(eleventhExBtn)
+        self.view.addSubview(challengeBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -156,6 +163,11 @@ final class Chapter02_ViewController: UIViewController {
         eleventhExBtn.leadingAnchor.constraint(equalTo: tenthExBtn.trailingAnchor, constant: 30).isActive = true
         eleventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         eleventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        challengeBtn.topAnchor.constraint(equalTo: eleventhExBtn.topAnchor).isActive = true
+        challengeBtn.leadingAnchor.constraint(equalTo: eleventhExBtn.trailingAnchor, constant: 30).isActive = true
+        challengeBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        challengeBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -445,6 +457,43 @@ extension Chapter02_ViewController {
             // publisher.send(1) 오류.
         }
     }
+    
+    private func challenge() {
+        example(of: "Create a Blackjack card dealer") {
+            let dealtHand = PassthroughSubject<Hand, HandError>()
+            
+            func deal(_ cardCount: UInt) {
+                var deck: [Card] = cards
+                var cardsRemaining: Int = 52
+                var hand: [Card] = []
+                
+                for _ in 0 ..< cardCount {
+                    let randomIndex: Int = .random(in: 0 ..< cardsRemaining)
+                    hand.append(deck[randomIndex])
+                    deck.remove(at: randomIndex)
+                    cardsRemaining -= 1
+                }
+                
+                // Add code to update dealtHand here
+                if hand.points > 21 {
+                    dealtHand.send(completion: .failure(.busted))
+                } else {
+                    dealtHand.send(hand)
+                }
+            }
+            
+            // Add subscription to dealtHand here
+            dealtHand.sink(receiveCompletion: {
+                if case let .failure(error) = $0 {
+                    print(error)
+                }
+            }, receiveValue: { hand in
+                print("\(hand.cardString) for \(hand.points), points")
+            }).store(in: &subscriptions)
+            
+            deal(3)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -491,5 +540,9 @@ extension Chapter02_ViewController {
     
     @objc private func didTapEleventhEx() {
         typeErasure()
+    }
+    
+    @objc private func didTapChallenge() {
+        challenge()
     }
 }
