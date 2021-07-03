@@ -52,6 +52,12 @@ final class Chapter03_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var eighthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eighthEx")
+        button.addTarget(self, action: #selector(didTapEighthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -71,6 +77,7 @@ final class Chapter03_ViewController: UIViewController {
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
         self.view.addSubview(seventhExBtn)
+        self.view.addSubview(eighthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -106,6 +113,11 @@ final class Chapter03_ViewController: UIViewController {
         seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
         seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eighthExBtn.topAnchor.constraint(equalTo: seventhExBtn.topAnchor).isActive = true
+        eighthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.trailingAnchor, constant: 30).isActive = true
+        eighthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eighthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func quadrantOf(x: Int, y: Int) -> String {
@@ -217,6 +229,21 @@ extension Chapter03_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func scan() {
+        // scan(_:_:): upstream publisher가 클로저에 내보낸 현재값과 해당 클로저에 의해 반환된 마지막 값을 제공
+        // reduce 처럼 사용할 수 있는것 같음.
+        var dailyGainLose: Int {
+            .random(in: -10...10)
+        }
+        
+        let august2019 = (0..<22).map { _ in dailyGainLose }.publisher
+        
+        august2019
+            .scan(50) { max(0, $0 + $1) }
+            .sink(receiveValue: { print($0) })
+            .store(in: &subscriptions)
+    }
 }
 
 // - MARK: Button Actions
@@ -247,6 +274,10 @@ extension Chapter03_ViewController {
     
     @objc private func didTapSeventhEx() {
         replaceEmpty()
+    }
+    
+    @objc private func didTapEighthEx() {
+        scan()
     }
 }
 
