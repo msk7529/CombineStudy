@@ -52,6 +52,18 @@ final class Chapter02_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var eighthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eighthExBtn")
+        button.addTarget(self, action: #selector(didTapEighthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var ninethExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "ninethExBtn")
+        button.addTarget(self, action: #selector(didTapNinethEx), for: .touchUpInside)
+        return button
+    }()
+    
     private let notiName: Notification.Name = .init("MyNotification")
     private var subscriptions: Set<AnyCancellable> = .init()
 
@@ -73,6 +85,8 @@ final class Chapter02_ViewController: UIViewController {
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
         self.view.addSubview(seventhExBtn)
+        self.view.addSubview(eighthExBtn)
+        self.view.addSubview(ninethExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -108,6 +122,16 @@ final class Chapter02_ViewController: UIViewController {
         seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
         seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eighthExBtn.topAnchor.constraint(equalTo: seventhExBtn.topAnchor).isActive = true
+        eighthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.trailingAnchor, constant: 30).isActive = true
+        eighthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eighthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        ninethExBtn.topAnchor.constraint(equalTo: eighthExBtn.topAnchor).isActive = true
+        ninethExBtn.leadingAnchor.constraint(equalTo: eighthExBtn.trailingAnchor, constant: 30).isActive = true
+        ninethExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        ninethExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -240,7 +264,7 @@ extension Chapter02_ViewController {
         }
     }
     
-    private func HelloFuture() {
+    private func helloFuture() {
         // Future: Just와는 달리 단일값을 비동기적으로 생성한 다음 완료할 수 있는 Publisher
         example(of: "Future") {
             func futureIncrement(integer: Int, afterDelay delay: TimeInterval) -> Future<Int, Never> {
@@ -260,8 +284,83 @@ extension Chapter02_ViewController {
                 .store(in: &subscriptions)
             future.sink(receiveCompletion: { print("Second", $0) }, receiveValue: { print("Second", $0) })
                 .store(in: &subscriptions)
-            // 첫번째, 두번째 subscription은 동일한 값을 받는다. Future은 promise를 다시 실행하지 않고 output을 공유하거나 replay한다.
+            // 첫번째, 두번째 subscription은 동일한 값을 받는다. Future은 promise를 다시 실행하지 않고 output을 공유하거나 replay한다. 위의 sink 호출결과는 비동기적이라 순서보장이 되지 않는다.
         }
+    }
+    
+    private func helloPassthroughSubject() {
+        // Subject: non-Combine 코드가 Combine subscriber에게 값을 보낼 수 있도록 중개자 역할을 함.
+        example(of: "PassthroughSubject") {
+            enum MyError: Error {
+                case test
+            }
+            
+            final class StringSubscriber: Subscriber {
+                typealias Input = String
+                typealias Failure = MyError
+                
+                func receive(subscription: Subscription) {
+                    subscription.request(.max(2))
+                }
+                
+                func receive(_ input: String) -> Subscribers.Demand {
+                    print("Received value", input)
+                    return input == "World" ? .max(1) : .none
+                }
+                
+                func receive(completion: Subscribers.Completion<MyError>) {
+                    print("Received completion", completion)
+                }
+            }
+            
+            let subscriber = StringSubscriber()
+            let subject = PassthroughSubject<String, MyError>()
+            
+            subject.subscribe(subscriber) // subscriber을 주제(publisher)에 등록.
+            
+            // sink를 사용하여 또다른 구독을 생성.
+            let subscription = subject.sink { completion in
+                print("Received completion (sink)", completion)
+            } receiveValue: { value in
+                print("Received value (sink)", value)
+            }
+            
+            subject.send("Hello")
+            subject.send("World")
+            
+            subscription.cancel()   // 두번째 구독을 취소한다.
+            
+            subject.send("Still there?")    // 두번째 구독이 취소되었기때문에, sink쪽은 호출되지 않음.
+            
+            subject.send(completion: .failure(MyError.test)) // receive(completion:)이 호출됨
+            // Publisher가 정상이든 오류든 완료이벤트를 보내면 더이상의 이벤트는 수신되지 않는다.
+            subject.send(completion: .finished)     // 아무것도 출력되지 않음.
+            subject.send("How about another one?")  // 아무것도 출력되지 않음.
+        }
+    }
+    
+    private func helloCurrentValueSubject() {
+        var subscriptions = Set<AnyCancellable>()   // Set에 저장된 구독들은 Set가 메모리에서 해제될때, 즉, 여기선 함수가 종료될때 자동으로 취소된다.
+        
+        let subject = CurrentValueSubject<Int, Never>(0)
+        
+        subject.print()
+            .sink(receiveValue: { print($0) })
+            .store(in: &subscriptions)
+        
+        subject.send(1)
+        subject.send(2)
+        
+        print(subject.value)    // passthrough subject와 달리, current value를 subject에 요청할 수 있다.
+        
+        subject.value = 3   // send 대신에 이런식의 할당도 가능하다.
+        
+        subject.print()
+            .sink(receiveValue: { print("Second subscription", $0) })
+            .store(in: &subscriptions)  // 새로운 구독을 생성
+        
+        // "receive cancel" 두 번 출력. 함수가 종료될 때 Set에 저장된 구독들이 자동으로 취소.
+        // subect.send(completion: .finished) 를 사용하면 cancel 대신 finished가 출력.
     }
 }
 
@@ -292,6 +391,14 @@ extension Chapter02_ViewController {
     }
     
     @objc private func didTapSeventhEx() {
-        HelloFuture()
+        helloFuture()
+    }
+    
+    @objc private func didTapEighthEx() {
+        helloPassthroughSubject()
+    }
+    
+    @objc private func didTapNinethEx() {
+        helloCurrentValueSubject()
     }
 }
