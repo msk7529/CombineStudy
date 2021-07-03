@@ -40,6 +40,18 @@ final class Chapter03_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var sixthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "sixthEx")
+        button.addTarget(self, action: #selector(didTapSixthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var seventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "seventhEx")
+        button.addTarget(self, action: #selector(didTapSeventhEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -57,6 +69,8 @@ final class Chapter03_ViewController: UIViewController {
         self.view.addSubview(thirdExBtn)
         self.view.addSubview(fourthExBtn)
         self.view.addSubview(fifthExBtn)
+        self.view.addSubview(sixthExBtn)
+        self.view.addSubview(seventhExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -82,6 +96,16 @@ final class Chapter03_ViewController: UIViewController {
         fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
         fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        sixthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
+        sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        seventhExBtn.topAnchor.constraint(equalTo: fourthExBtn.bottomAnchor, constant: 30).isActive = true
+        seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
+        seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func quadrantOf(x: Int, y: Int) -> String {
@@ -174,6 +198,25 @@ extension Chapter03_ViewController {
             .sink(receiveValue: { print($0) })
             .store(in: &subscriptions)
     }
+    
+    private func replaceNil() {
+        ["A", nil, "C"].publisher
+            .eraseToAnyPublisher()  // type erase를 수행하지 않으면 replaceNil 수행시 언래핑되지 않은 상태로 출력된다. 버그인가? 나중에 고쳐질려나 ..
+            .replaceNil(with: "-")
+            .sink(receiveValue: { print($0) })
+            .store(in: &subscriptions)
+    }
+    
+    private func replaceEmpty() {
+        // replaceEmpty(with:): publihser가 값을 내보내지 않고 완료하는 경우 값을 대체하거나 실제로 삽입할 수 있다.
+        example(of: "replaceEmpty(with:)") {
+            let empty = Empty<Int, Never>()
+            
+            empty.replaceEmpty(with: 1)
+                .sink(receiveCompletion: { print($0) }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -196,6 +239,14 @@ extension Chapter03_ViewController {
     
     @objc private func didTapFifthEx() {
         flatMap()
+    }
+    
+    @objc private func didTapSixthEx() {
+        replaceNil()
+    }
+    
+    @objc private func didTapSeventhEx() {
+        replaceEmpty()
     }
 }
 
