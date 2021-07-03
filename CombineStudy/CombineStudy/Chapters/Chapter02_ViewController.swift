@@ -64,6 +64,12 @@ final class Chapter02_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var tenthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "tenthExBtn")
+        button.addTarget(self, action: #selector(didTapTenthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private let notiName: Notification.Name = .init("MyNotification")
     private var subscriptions: Set<AnyCancellable> = .init()
 
@@ -87,6 +93,7 @@ final class Chapter02_ViewController: UIViewController {
         self.view.addSubview(seventhExBtn)
         self.view.addSubview(eighthExBtn)
         self.view.addSubview(ninethExBtn)
+        self.view.addSubview(tenthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -132,6 +139,11 @@ final class Chapter02_ViewController: UIViewController {
         ninethExBtn.leadingAnchor.constraint(equalTo: eighthExBtn.trailingAnchor, constant: 30).isActive = true
         ninethExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         ninethExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        tenthExBtn.topAnchor.constraint(equalTo: seventhExBtn.bottomAnchor, constant: 30).isActive = true
+        tenthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.leadingAnchor).isActive = true
+        tenthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        tenthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -362,6 +374,49 @@ extension Chapter02_ViewController {
         // "receive cancel" 두 번 출력. 함수가 종료될 때 Set에 저장된 구독들이 자동으로 취소.
         // subect.send(completion: .finished) 를 사용하면 cancel 대신 finished가 출력.
     }
+    
+    private func dynamicallyAdjustingDemand() {
+        example(of: "Dynamically adjusting Demand") {
+            final class IntSubscriber: Subscriber {
+                typealias Input = Int
+                typealias Failure = Never
+                
+                func receive(subscription: Subscription) {
+                    subscription.request(.max(2))
+                }
+                
+                func receive(_ input: Int) -> Subscribers.Demand {
+                    print("Received value", input)
+                    
+                    switch input {
+                    case 1:
+                        return .max(2)
+                    case 3:
+                        return .max(1)
+                    default:
+                        return .none
+                    }
+                }
+                
+                func receive(completion: Subscribers.Completion<Never>) {
+                    print("Received completion", completion)
+                }
+            }
+            
+            let subscriber = IntSubscriber()
+            
+            let subject = PassthroughSubject<Int, Never>()
+            
+            subject.subscribe(subscriber)
+            
+            subject.send(1)
+            subject.send(2)
+            subject.send(3)
+            subject.send(4)
+            subject.send(5)
+            subject.send(6) // 구독자는 6을 받지 못함.
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -400,5 +455,9 @@ extension Chapter02_ViewController {
     
     @objc private func didTapNinethEx() {
         helloCurrentValueSubject()
+    }
+    
+    @objc private func didTapTenthEx() {
+        dynamicallyAdjustingDemand()
     }
 }
