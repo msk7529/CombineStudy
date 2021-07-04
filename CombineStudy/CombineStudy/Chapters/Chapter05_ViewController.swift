@@ -28,6 +28,24 @@ final class Chapter05_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var fourthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fourthEx")
+        button.addTarget(self, action: #selector(didTapFourthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var fifthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fifthEx")
+        button.addTarget(self, action: #selector(didTapFifthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var sixthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "sixthEx")
+        button.addTarget(self, action: #selector(didTapSixthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -43,6 +61,9 @@ final class Chapter05_ViewController: UIViewController {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
         self.view.addSubview(thirdExBtn)
+        self.view.addSubview(fourthExBtn)
+        self.view.addSubview(fifthExBtn)
+        self.view.addSubview(sixthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -58,6 +79,21 @@ final class Chapter05_ViewController: UIViewController {
         thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
         thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fourthExBtn.topAnchor.constraint(equalTo: firstExBtn.bottomAnchor, constant: 30).isActive = true
+        fourthExBtn.leadingAnchor.constraint(equalTo: firstExBtn.leadingAnchor).isActive = true
+        fourthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fourthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fifthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
+        fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        sixthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
+        sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -118,6 +154,60 @@ extension Chapter05_ViewController {
             // prepending이 완료되었음을 알고, 기본 publisher로 계속 진행할 수 있도록 완료해야 한다.
         }
     }
+    
+    private func appendOutput() {
+        // append: upstream의 맨 뒤에 값을 추가한다.
+        example(of: "append(Output...)") {
+            let publisher = [1].publisher
+            
+            publisher
+                .append(2, 3)
+                .append(4)
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+        
+        example(of: "append(Output...) #2") {
+            let publiser = PassthroughSubject<Int, Never>()
+            
+            publiser
+                .append(3, 4)
+                .append(5)
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+            
+            publiser.send(1)
+            publiser.send(2)
+            
+            publiser.send(completion: .finished)    // 이걸 수행해야 append한 값들이 출력된다.
+            // 즉, publisher가 완료 이벤트를 보내지 않으면 append가 발생하지 않는다.
+        }
+    }
+    
+    private func appendSequence() {
+        example(of: "append(Sequence)") {
+            let publisher = [1, 2, 3].publisher
+            
+            publisher
+                .append([4, 5])
+                .append(Set([6, 7]))    // 순서 보장 되지 않음.
+                .append(stride(from: 8, to: 11, by: 2))
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func appendPublisher() {
+        example(of: "append(Publisher)") {
+            let publisher1 = [1, 2].publisher
+            let publisher2 = [3, 4].publisher
+            
+            publisher1
+                .append(publisher2)
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -133,5 +223,17 @@ extension Chapter05_ViewController {
     
     @objc private func didTapThirdEx() {
         prependPublisher()
+    }
+    
+    @objc private func didTapFourthEx() {
+        appendOutput()
+    }
+    
+    @objc private func didTapFifthEx() {
+        appendSequence()
+    }
+    
+    @objc private func didTapSixthEx() {
+        appendPublisher()
     }
 }
