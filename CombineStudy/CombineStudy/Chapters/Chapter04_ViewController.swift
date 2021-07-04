@@ -82,6 +82,12 @@ final class Chapter04_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var challengeBtn: commonBtn = {
+        let button: commonBtn = .init(title: "challenge")
+        button.addTarget(self, action: #selector(didTapChallenge), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -106,6 +112,7 @@ final class Chapter04_ViewController: UIViewController {
         self.view.addSubview(tenthExBtn)
         self.view.addSubview(eleventhExBtn)
         self.view.addSubview(tweleveExBtn)
+        self.view.addSubview(challengeBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -166,6 +173,11 @@ final class Chapter04_ViewController: UIViewController {
         tweleveExBtn.leadingAnchor.constraint(equalTo: eleventhExBtn.trailingAnchor, constant: 30).isActive = true
         tweleveExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         tweleveExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        challengeBtn.topAnchor.constraint(equalTo: tenthExBtn.bottomAnchor, constant: 30).isActive = true
+        challengeBtn.leadingAnchor.constraint(equalTo: tenthExBtn.leadingAnchor).isActive = true
+        challengeBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        challengeBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -354,6 +366,20 @@ extension Chapter04_ViewController {
             }
         }
     }
+    
+    private func challenge() {
+        example(of: "Challenge: Filter all the things") {
+            let numbers = (1...100).publisher
+            
+            numbers
+                .dropFirst(50)
+                .prefix(20)
+                .filter { $0.isMultiple(of: 2) }
+                .collect()
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -405,6 +431,10 @@ extension Chapter04_ViewController {
     
     @objc private func didTapTwelveEx() {
         prefixUntilOutputFrom()
+    }
+    
+    @objc private func didTapChallenge() {
+        challenge()
     }
 }
 
