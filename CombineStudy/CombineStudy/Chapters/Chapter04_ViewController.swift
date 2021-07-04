@@ -64,6 +64,24 @@ final class Chapter04_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var tenthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "tenthEx")
+        button.addTarget(self, action: #selector(didTapTenthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var eleventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eleventhEx")
+        button.addTarget(self, action: #selector(didTapEleventhEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var tweleveExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "tweleveEx")
+        button.addTarget(self, action: #selector(didTapTwelveEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -85,6 +103,9 @@ final class Chapter04_ViewController: UIViewController {
         self.view.addSubview(seventhExBtn)
         self.view.addSubview(eighthExBtn)
         self.view.addSubview(ninethExBtn)
+        self.view.addSubview(tenthExBtn)
+        self.view.addSubview(eleventhExBtn)
+        self.view.addSubview(tweleveExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -130,6 +151,21 @@ final class Chapter04_ViewController: UIViewController {
         ninethExBtn.leadingAnchor.constraint(equalTo: eighthExBtn.trailingAnchor, constant: 30).isActive = true
         ninethExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         ninethExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        tenthExBtn.topAnchor.constraint(equalTo: seventhExBtn.bottomAnchor, constant: 30).isActive = true
+        tenthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.leadingAnchor).isActive = true
+        tenthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        tenthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eleventhExBtn.topAnchor.constraint(equalTo: tenthExBtn.topAnchor).isActive = true
+        eleventhExBtn.leadingAnchor.constraint(equalTo: tenthExBtn.trailingAnchor, constant: 30).isActive = true
+        eleventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eleventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        tweleveExBtn.topAnchor.constraint(equalTo: eleventhExBtn.topAnchor).isActive = true
+        tweleveExBtn.leadingAnchor.constraint(equalTo: eleventhExBtn.trailingAnchor, constant: 30).isActive = true
+        tweleveExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        tweleveExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -273,6 +309,51 @@ extension Chapter04_ViewController {
             }
         }
     }
+    
+    private func prefix() {
+        // prefix: upstream 에서 처음 n개의 값만 출력하고 publisher는 완료된다. dropFirst와 반대 개념
+        example(of: "prefix") {
+            let numbers = (1...10).publisher
+            
+            numbers
+                .prefix(2)
+                .sink(receiveCompletion: { print("Completed with \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func prefixWhile() {
+        // prefix(while:): where 조건이 처음 false가 되면 더이상의 값을 내보내지 않고 완료된다. dropWhile과 반대 개념.
+        example(of: "prefix(while:)") {
+            let numbers = (1...10).publisher
+            
+            numbers
+                .prefix(while: { $0 < 3 })
+                .sink(receiveCompletion: { print("Completed with \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func prefixUntilOutputFrom() {
+        // prefix(untilOutputFrom:): 특정 publisher가 값을 내보내면 더이상의 upstream 값들을 내보내지 않고 완료한다.
+        example(of: "prefix(untilOutputFrom:)") {
+            let isReady = PassthroughSubject<Void, Never>()
+            let taps = PassthroughSubject<Int, Never>()
+            
+            taps
+                .prefix(untilOutputFrom: isReady)
+                .sink(receiveCompletion: { print("Completed with \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+            
+            (1...5).forEach {
+                taps.send($0)
+                
+                if $0 == 2 {
+                    isReady.send()
+                }
+            }
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -312,6 +393,18 @@ extension Chapter04_ViewController {
     
     @objc private func didTapNinethEx() {
         dropUntilOutputFrom()
+    }
+    
+    @objc private func didTapTenthEx() {
+        prefix()
+    }
+    
+    @objc private func didTapEleventhEx() {
+        prefixWhile()
+    }
+    
+    @objc private func didTapTwelveEx() {
+        prefixUntilOutputFrom()
     }
 }
 
