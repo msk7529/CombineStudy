@@ -22,6 +22,18 @@ final class Chapter04_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var fourthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fourthEx")
+        button.addTarget(self, action: #selector(didTapFourthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -36,6 +48,8 @@ final class Chapter04_ViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
+        self.view.addSubview(fourthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -46,6 +60,16 @@ final class Chapter04_ViewController: UIViewController {
         secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
         secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fourthExBtn.topAnchor.constraint(equalTo: firstExBtn.bottomAnchor, constant: 30).isActive = true
+        fourthExBtn.leadingAnchor.constraint(equalTo: firstExBtn.leadingAnchor).isActive = true
+        fourthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fourthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -77,6 +101,27 @@ extension Chapter04_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func compactMap() {
+        let strings = ["a", "1.24", "3", "def", "45", "0.23"].publisher
+        
+        strings
+            .compactMap { Float($0) }
+            .sink(receiveValue: { print($0) })
+            .store(in: &subscriptions)
+    }
+    
+    private func ignoreOutput() {
+        // ignoreOutput: subscriber에게 완료이벤트만 전달한다.
+        example(of: "ignoreOutput") {
+            let numbers = (1...10000).publisher
+            
+            numbers
+                .ignoreOutput()
+                .sink(receiveCompletion: { print("Completed with: \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -88,6 +133,14 @@ extension Chapter04_ViewController {
     
     @objc private func didTapSecondEx() {
         removeDuplicates()
+    }
+    
+    @objc private func didTapThirdEx() {
+        compactMap()
+    }
+    
+    @objc private func didTapFourthEx() {
+        ignoreOutput()
     }
 }
 
