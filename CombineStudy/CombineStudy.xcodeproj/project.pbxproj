@@ -19,6 +19,7 @@
 		C20CBDD12690D3C40088BB7A /* Chapter02_Challenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CBDD02690D3C40088BB7A /* Chapter02_Challenge.swift */; };
 		C20CBDD32690E40A0088BB7A /* Chapter03_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CBDD22690E40A0088BB7A /* Chapter03_ViewController.swift */; };
 		C20CBDD52690FDCD0088BB7A /* Chapter03_Challenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CBDD42690FDCD0088BB7A /* Chapter03_Challenge.swift */; };
+		C20CBDD72691FC6C0088BB7A /* Chapter04_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CBDD62691FC6C0088BB7A /* Chapter04_ViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		C20CBDD02690D3C40088BB7A /* Chapter02_Challenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter02_Challenge.swift; sourceTree = "<group>"; };
 		C20CBDD22690E40A0088BB7A /* Chapter03_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter03_ViewController.swift; sourceTree = "<group>"; };
 		C20CBDD42690FDCD0088BB7A /* Chapter03_Challenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter03_Challenge.swift; sourceTree = "<group>"; };
+		C20CBDD62691FC6C0088BB7A /* Chapter04_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter04_ViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,7 @@
 				C20CBDD02690D3C40088BB7A /* Chapter02_Challenge.swift */,
 				C20CBDD22690E40A0088BB7A /* Chapter03_ViewController.swift */,
 				C20CBDD42690FDCD0088BB7A /* Chapter03_Challenge.swift */,
+				C20CBDD62691FC6C0088BB7A /* Chapter04_ViewController.swift */,
 			);
 			path = Chapters;
 			sourceTree = "<group>";
@@ -165,6 +168,7 @@
 			files = (
 				C20CBC1C268CDC4F0088BB7A /* FirstViewController.swift in Sources */,
 				C20CBDD32690E40A0088BB7A /* Chapter03_ViewController.swift in Sources */,
+				C20CBDD72691FC6C0088BB7A /* Chapter04_ViewController.swift in Sources */,
 				C20CBC18268CDC4F0088BB7A /* AppDelegate.swift in Sources */,
 				C20CBC2F268CE1AC0088BB7A /* Chapter02_ViewController.swift in Sources */,
 				C20CBDD52690FDCD0088BB7A /* Chapter03_Challenge.swift in Sources */,
