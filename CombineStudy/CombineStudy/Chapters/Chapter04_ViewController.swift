@@ -34,6 +34,18 @@ final class Chapter04_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var fifthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fifthEx")
+        button.addTarget(self, action: #selector(didTapFifthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var sixthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "sixthEx")
+        button.addTarget(self, action: #selector(didTapsixthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -50,6 +62,8 @@ final class Chapter04_ViewController: UIViewController {
         self.view.addSubview(secondExBtn)
         self.view.addSubview(thirdExBtn)
         self.view.addSubview(fourthExBtn)
+        self.view.addSubview(fifthExBtn)
+        self.view.addSubview(sixthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -70,6 +84,16 @@ final class Chapter04_ViewController: UIViewController {
         fourthExBtn.leadingAnchor.constraint(equalTo: firstExBtn.leadingAnchor).isActive = true
         fourthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         fourthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fifthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
+        fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        sixthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
+        sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -122,6 +146,48 @@ extension Chapter04_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func first() {
+        example(of: "first(where:)") {
+            // first(where:): publisher가 내보낸 출력중 where에 만족하는 첫번째를 찾으면 subscription을 통해 cancel을 전송하여 업스트림이 값을 내보내는 것을 중지시킨다.
+            let numbers = (1...9).publisher
+            
+            numbers
+                .print("number")
+                .first(where: { $0 % 2 == 0 })
+                .sink(receiveCompletion: { print("Completed with: \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func last() {
+        // last(where:): first와는 달리 pubisher가 내보내는 모든 값들을 기다려야 한다. 이런 이유때문에, upstream publisher은 어느시점에서 완료되는 publiser 이어야 한다.
+        example(of: "last(where:)") {
+            let numbers = (1...9).publisher
+            
+            numbers
+                .last(where: { $0 % 2 == 0 })
+                .sink(receiveCompletion: { print("Completed with \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+        
+        example(of: "last(where:)") {
+            let numbers = PassthroughSubject<Int, Never>()
+            
+            numbers
+                .last(where: { $0 % 2 == 0 })
+                .sink(receiveCompletion: { print("Completed with \($0)") }, receiveValue: { print($0) })
+                .store(in: &subscriptions)
+            
+            numbers.send(1)
+            numbers.send(2)
+            numbers.send(3)
+            numbers.send(4)
+            numbers.send(5)
+            
+            numbers.send(completion: .finished) // 이걸 수행하지 않으면 아무것도 출력되지 않는다.
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -141,6 +207,14 @@ extension Chapter04_ViewController {
     
     @objc private func didTapFourthEx() {
         ignoreOutput()
+    }
+    
+    @objc private func didTapFifthEx() {
+        first()
+    }
+    
+    @objc private func didTapsixthEx() {
+        last()
     }
 }
 
