@@ -46,6 +46,24 @@ final class Chapter04_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var seventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "seventhEx")
+        button.addTarget(self, action: #selector(didTapSeventhEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var eighthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eighthEx")
+        button.addTarget(self, action: #selector(didTapEighthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var ninethExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "ninethEx")
+        button.addTarget(self, action: #selector(didTapNinethEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -64,6 +82,9 @@ final class Chapter04_ViewController: UIViewController {
         self.view.addSubview(fourthExBtn)
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
+        self.view.addSubview(seventhExBtn)
+        self.view.addSubview(eighthExBtn)
+        self.view.addSubview(ninethExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -94,6 +115,21 @@ final class Chapter04_ViewController: UIViewController {
         sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
         sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        seventhExBtn.topAnchor.constraint(equalTo: fourthExBtn.bottomAnchor, constant: 30).isActive = true
+        seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
+        seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eighthExBtn.topAnchor.constraint(equalTo: seventhExBtn.topAnchor).isActive = true
+        eighthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.trailingAnchor, constant: 30).isActive = true
+        eighthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eighthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        ninethExBtn.topAnchor.constraint(equalTo: eighthExBtn.topAnchor).isActive = true
+        ninethExBtn.leadingAnchor.constraint(equalTo: eighthExBtn.trailingAnchor, constant: 30).isActive = true
+        ninethExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        ninethExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -188,6 +224,55 @@ extension Chapter04_ViewController {
             numbers.send(completion: .finished) // 이걸 수행하지 않으면 아무것도 출력되지 않는다.
         }
     }
+    
+    private func dropFirst() {
+        example(of: "dropFirst") {
+            // dropFirst: 처음 n개의 출력값을 무시한다.
+            let numbers = (1...10).publisher
+            
+            numbers
+                .dropFirst(8)
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func dropWhile() {
+        example(of: "drop(while:)") {
+            // drop(while:): while 조건이 처음 false인 때부터 출력값이 stream을 통해 흐르기 시작한다.
+            // 출력값이 stream을 통해 흐르기 시작하면, 다시는 drop 클로저가 실행되지 않는다.
+            let numbers = (1...10).publisher
+            
+            numbers
+                .drop(while: {
+                    print("x")
+                    return $0 % 5 != 0
+                })
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func dropUntilOutputFrom() {
+        // drop(untilOutputFrom:): 특정 publisher가 값을 내보내기 전까지는 upstream의 값들을 무시한다.
+        example(of: "drop(untilOutputFrom") {
+            let isReady = PassthroughSubject<Void, Never>()
+            let taps = PassthroughSubject<Int, Never>()
+            
+            taps
+                .drop(untilOutputFrom: isReady)
+                .sink(receiveValue: { print($0) })
+                .store(in: &subscriptions)
+            
+            (1...5).forEach {
+                taps.send($0)
+                
+                if $0 == 3 {
+                    isReady.send()
+                }
+            }
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -215,6 +300,18 @@ extension Chapter04_ViewController {
     
     @objc private func didTapsixthEx() {
         last()
+    }
+    
+    @objc private func didTapSeventhEx() {
+        dropFirst()
+    }
+    
+    @objc private func didTapEighthEx() {
+        dropWhile()
+    }
+    
+    @objc private func didTapNinethEx() {
+        dropUntilOutputFrom()
     }
 }
 
