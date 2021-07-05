@@ -214,7 +214,7 @@ extension Chapter02_ViewController {
             }, receiveValue: {
                 print("Received value", $0)
             })
-        }
+        } 
     }
     
     private func subscribingWithAssign() {
