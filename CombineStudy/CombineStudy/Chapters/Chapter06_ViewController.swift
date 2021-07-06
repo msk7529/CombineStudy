@@ -28,7 +28,27 @@ final class Chapter06_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var fourthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fourthEx")
+        button.addTarget(self, action: #selector(didTapFourthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var fifthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "fifthEx")
+        button.addTarget(self, action: #selector(didTapFifthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
+    
+    let deltaFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.negativePrefix = ""
+        f.minimumFractionDigits = 1
+        f.maximumFractionDigits = 1
+        return f
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,6 +63,8 @@ final class Chapter06_ViewController: UIViewController {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
         self.view.addSubview(thirdExBtn)
+        self.view.addSubview(fourthExBtn)
+        self.view.addSubview(fifthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -58,6 +80,20 @@ final class Chapter06_ViewController: UIViewController {
         thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
         thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fourthExBtn.topAnchor.constraint(equalTo: firstExBtn.bottomAnchor, constant: 30).isActive = true
+        fourthExBtn.leadingAnchor.constraint(equalTo: firstExBtn.leadingAnchor).isActive = true
+        fourthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fourthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        fifthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
+        fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+    }
+    
+    private func deltaTime(_ date: Date) -> String {
+        return deltaFormatter.string(for: Date().timeIntervalSince(date))!
     }
 }
 
@@ -157,6 +193,99 @@ extension Chapter06_ViewController {
             }
         }
     }
+    
+    private func debounce() {
+        let start = Date()
+        
+        let typingHelloWorld: [(TimeInterval, String)] = [
+          (0.0, "H"),
+          (0.1, "He"),
+          (0.2, "Hel"),
+          (0.3, "Hell"),
+          (0.5, "Hello"),
+          (0.6, "Hello "),
+          (2.0, "Hello W"),
+          (2.1, "Hello Wo"),
+          (2.2, "Hello Wor"),
+          (2.4, "Hello Worl"),
+          (2.5, "Hello World")
+        ]
+        
+        example(of: "Debounce") {
+            let subject = PassthroughSubject<String, Never>()
+            
+            let debounced = subject
+                .debounce(for: .seconds(1.0), scheduler: DispatchQueue.main)
+                // 입력 주기가 끝나면 마지막 값을 내보낸다. 즉, 쭉 값이 들어오다가 마지막 값이 들어온 후 1초동안 아무값도 들어오지 않으면 해당 값을 내보낸다. 추가로 값이 들어오면 주기가 다시 갱신된다.
+                .share()    // 여러 subscriber가 동일한 결과값을 받기 위함.
+            
+            subject
+                .sink { [weak self] string in
+                    guard let self = self else { return }
+                    
+                    print("+\(self.deltaTime(start))s: Subject emitted: \(string)")
+                }
+                .store(in: &subscriptions)
+            
+            debounced
+                .sink { [weak self] string in
+                    guard let self = self else { return }
+                    
+                    print("+\(self.deltaTime(start))s: Debounced emitted: \(string)")
+                }
+                .store(in: &subscriptions)
+            
+            subject.feed(with: typingHelloWorld)
+        }
+    }
+    
+    private func throttle() {
+        let start = Date()
+        let throttleDelay = 1.0
+        
+        let typingHelloWorld: [(TimeInterval, String)] = [
+          (0.0, "H"),
+          (0.1, "He"),
+          (0.2, "Hel"),
+          (0.3, "Hell"),
+          (0.5, "Hello"),
+          (0.6, "Hello "),
+          (2.0, "Hello W"),
+          (2.1, "Hello Wo"),
+          (2.2, "Hello Wor"),
+          (2.4, "Hello Worl"),
+          (2.5, "Hello World")
+        ]
+        
+        example(of: "Throttle") {
+            let subject = PassthroughSubject<String, Never>()
+            
+            let throttled = subject
+                .throttle(for: .seconds(throttleDelay), scheduler: DispatchQueue.main, latest: false)
+                // 처음 구독 시점에 값을 한번 내보내고, lastest를 false로 주면 특정 주기 안의 첫번째 값을 내보낸다.
+                // 버튼 터치와 같은 연속 이벤트를 방지해야하는 경우에 유용할 듯
+                // lastest를 true로 주면 특정 주기안의 마지막 값을 내보낸다.
+                .share()
+            
+            subject
+                .sink { [weak self] string in
+                    guard let self = self else { return }
+                    
+                    print("+\(self.deltaTime(start))s: Subject emitted: \(string)")
+                }
+                .store(in: &subscriptions)
+            
+            throttled
+                .sink { [weak self] string in
+                    guard let self = self else { return }
+                    
+                    print("+\(self.deltaTime(start))s: Throttled emitted: \(string)")
+                }
+                .store(in: &subscriptions)
+            
+            subject.feed(with: typingHelloWorld)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -172,5 +301,31 @@ extension Chapter06_ViewController {
     
     @objc private func didTapThirdEx() {
         collectValue2()
+    }
+    
+    @objc private func didTapFourthEx() {
+        debounce()
+    }
+    
+    @objc private func didTapFifthEx() {
+        throttle()
+    }
+}
+
+private extension Subject where Output == String {
+    /// A function that can feed delayed values to a subject for testing and simulation purposes
+    func feed(with data: [(TimeInterval, String)]) {
+        var lastDelay: TimeInterval = 0
+        for entry in data {
+            lastDelay = entry.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + entry.0) { [unowned self] in
+                // 정의된 시간만큼 후에 값을 내보낸다.
+                self.send(entry.1)
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + lastDelay + 1.5) { [unowned self] in
+            self.send(completion: .finished)
+        }
     }
 }
