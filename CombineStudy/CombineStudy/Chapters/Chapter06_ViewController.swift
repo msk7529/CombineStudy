@@ -16,6 +16,18 @@ final class Chapter06_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var secondExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "secondEx")
+        button.addTarget(self, action: #selector(didTapSecondEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -29,11 +41,23 @@ final class Chapter06_ViewController: UIViewController {
     
     private func initView() {
         self.view.addSubview(firstExBtn)
+        self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
         firstExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         firstExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        secondExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
+        secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -68,6 +92,71 @@ extension Chapter06_ViewController {
             }
         }
     }
+    
+    private func collectValue1() {
+        example(of: "Collect Value1") {
+            let valuesPerSecond = 1.0
+            let collectTimeStride = 4
+            
+            let sourcePublisher = PassthroughSubject<Date, Never>()
+            
+            sourcePublisher
+                .sink { print("source: \($0)") }
+                .store(in: &subscriptions)
+            
+            let collectedPublisher = sourcePublisher
+                .collect(.byTime(DispatchQueue.main, .seconds(collectTimeStride)))
+            // collectTimeStride 초마다 수집한 값들을 배열형태로 내보낸다.
+                .flatMap { dates in dates.publisher }
+            // flatMap을 수행함으로써, collect로 배열을 내보낼 때마다 개별값으로 나누어 하나씩 내보낸다.
+            
+            collectedPublisher
+                .sink { print("collect: \($0)") }
+                .store(in: &subscriptions)
+            
+            Timer
+                .publish(every: 1.0 / valuesPerSecond, on: .main, in: .common)
+                .autoconnect()
+                .subscribe(sourcePublisher)
+                .store(in: &subscriptions)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+                sourcePublisher.send(completion: .finished)
+            }
+        }
+    }
+    
+    private func collectValue2() {
+        example(of: "Collect Value2") {
+            let valuesPerSecond = 1.0
+            let collectTimeStride = 4
+            let collectMaxCount = 2
+            
+            let sourcePublisher = PassthroughSubject<Date, Never>()
+            
+            sourcePublisher
+                .sink { print("source: \($0)") }
+                .store(in: &subscriptions)
+            
+            let collectedPublisher = sourcePublisher
+                .collect(.byTimeOrCount(DispatchQueue.main, .seconds(collectTimeStride), collectMaxCount))
+            // collectTimeStride 초마다 수집한 값들을 배열형태로 내보내는데, 그전에 버퍼가 꽉 차면 그 즉시 값을 내보낸다. 따라서 여기선 2초마다 2개씩 값을 내보내게 된다.
+            
+            collectedPublisher
+                .sink { print("collect: \($0)") }
+                .store(in: &subscriptions)
+            
+            Timer
+                .publish(every: 1.0 / valuesPerSecond, on: .main, in: .common)
+                .autoconnect()
+                .subscribe(sourcePublisher)
+                .store(in: &subscriptions)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15.0) {
+                sourcePublisher.send(completion: .finished)
+            }
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -75,5 +164,13 @@ extension Chapter06_ViewController {
     
     @objc private func didTapFirstEx() {
         shiftingTime()
+    }
+    
+    @objc private func didTapSecondEx() {
+        collectValue1()
+    }
+    
+    @objc private func didTapThirdEx() {
+        collectValue2()
     }
 }
