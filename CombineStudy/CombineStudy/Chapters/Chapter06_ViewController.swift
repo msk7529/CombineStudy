@@ -10,6 +10,10 @@ import Combine
 
 final class Chapter06_ViewController: UIViewController {
 
+    enum TimeoutError: Error {
+        case timedOut
+    }
+    
     private lazy var firstExBtn: commonBtn = {
         let button: commonBtn = .init(title: "firstEx")
         button.addTarget(self, action: #selector(didTapFirstEx), for: .touchUpInside)
@@ -40,7 +44,15 @@ final class Chapter06_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var sixthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "sixthEx")
+        button.addTarget(self, action: #selector(didTapSixthEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
+    
+    private let buttonSubject = PassthroughSubject<Void, TimeoutError>()
     
     let deltaFormatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -54,7 +66,7 @@ final class Chapter06_ViewController: UIViewController {
         super.viewDidLoad()
 
         self.view.backgroundColor = .systemBackground
-        self.navigationItem.title = "Chapter04"
+        self.navigationItem.title = "Chapter06"
         
         self.initView()
     }
@@ -65,6 +77,7 @@ final class Chapter06_ViewController: UIViewController {
         self.view.addSubview(thirdExBtn)
         self.view.addSubview(fourthExBtn)
         self.view.addSubview(fifthExBtn)
+        self.view.addSubview(sixthExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -90,6 +103,11 @@ final class Chapter06_ViewController: UIViewController {
         fifthExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.trailingAnchor, constant: 30).isActive = true
         fifthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         fifthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        sixthExBtn.topAnchor.constraint(equalTo: fourthExBtn.topAnchor).isActive = true
+        sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
+        sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func deltaTime(_ date: Date) -> String {
@@ -286,6 +304,34 @@ extension Chapter06_ViewController {
             subject.feed(with: typingHelloWorld)
         }
     }
+    
+    private func timeout() {
+        let eventBtn: commonBtn = {
+            let button: commonBtn = .init(title: "eventBtn")
+            button.addTarget(self, action: #selector(didTapEventButton), for: .touchUpInside)
+            return button
+        }()
+        
+        self.view.addSubview(eventBtn)
+        
+        eventBtn.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: -30).isActive = true
+        eventBtn.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -50).isActive = true
+        eventBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eventBtn.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        example(of: "Time out") {
+            buttonSubject
+                .timeout(.seconds(5), scheduler: DispatchQueue.main, customError: { .timedOut })
+                // 5초동안 아무런 값이 들어오지 않으면(이벤트가 발생하지 않으면) publishing을 종료한다. 5초안에 값이 들어오면 주기를 다시 갱신한다.
+                .sink(receiveCompletion: {
+                    if case let .failure(error) = $0 {
+                        print(error)    // Error없이 Never로 정의해도 관계없다.
+                    }
+                    eventBtn.removeFromSuperview()
+                }, receiveValue: { print("Button did Tap!") })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -309,6 +355,14 @@ extension Chapter06_ViewController {
     
     @objc private func didTapFifthEx() {
         throttle()
+    }
+    
+    @objc private func didTapSixthEx() {
+        timeout()
+    }
+    
+    @objc private func didTapEventButton() {
+        buttonSubject.send()
     }
 }
 

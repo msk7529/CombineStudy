@@ -82,7 +82,7 @@ final class Chapter05_ViewController: UIViewController {
         super.viewDidLoad()
 
         self.view.backgroundColor = .systemBackground
-        self.navigationItem.title = "Chapter04"
+        self.navigationItem.title = "Chapter05"
         
         self.initView()
     }
