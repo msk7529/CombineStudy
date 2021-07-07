@@ -52,6 +52,30 @@ final class Chapter07_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var eighthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eighthEx")
+        button.addTarget(self, action: #selector(didTapEighthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var ninethExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "ninethEx")
+        button.addTarget(self, action: #selector(didTapNinethEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var tenthExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "tenthEx")
+        button.addTarget(self, action: #selector(didTapTenthEx), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var eleventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "eleventhEx")
+        button.addTarget(self, action: #selector(didTapEleventhEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -71,6 +95,10 @@ final class Chapter07_ViewController: UIViewController {
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
         self.view.addSubview(seventhExBtn)
+        self.view.addSubview(eighthExBtn)
+        self.view.addSubview(ninethExBtn)
+        self.view.addSubview(tenthExBtn)
+        self.view.addSubview(eleventhExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -106,6 +134,26 @@ final class Chapter07_ViewController: UIViewController {
         seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
         seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eighthExBtn.topAnchor.constraint(equalTo: seventhExBtn.topAnchor).isActive = true
+        eighthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.trailingAnchor, constant: 30).isActive = true
+        eighthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eighthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        ninethExBtn.topAnchor.constraint(equalTo: eighthExBtn.topAnchor).isActive = true
+        ninethExBtn.leadingAnchor.constraint(equalTo: eighthExBtn.trailingAnchor, constant: 30).isActive = true
+        ninethExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        ninethExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        tenthExBtn.topAnchor.constraint(equalTo: seventhExBtn.bottomAnchor, constant: 30).isActive = true
+        tenthExBtn.leadingAnchor.constraint(equalTo: seventhExBtn.leadingAnchor).isActive = true
+        tenthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        tenthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        eleventhExBtn.topAnchor.constraint(equalTo: tenthExBtn.topAnchor).isActive = true
+        eleventhExBtn.leadingAnchor.constraint(equalTo: tenthExBtn.trailingAnchor, constant: 30).isActive = true
+        eleventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        eleventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -215,6 +263,92 @@ extension Chapter07_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func count() {
+        // count: upstream에서 내보내진 값들의 개수를 내보낸다.
+        example(of: "count") {
+            let publisher = ["A", "B", "C"].publisher
+            
+            publisher
+                .print("publisher")
+                .count()
+                .sink { print("I have \($0) items") }
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func contains() {
+        // contains: upstream에서 내보낸 값들중 특정값이 존재하면 true 리턴 후 구독 취소, 아니면 false리턴
+        example(of: "contains") {
+            let publisher = ["A", "B", "C", "D", "E"].publisher
+            let letter = "C"
+            
+            publisher
+                .print("publisher")
+                .contains(letter)
+                .sink(receiveValue: { contains in
+                    print(contains ? "Publisher emitted \(letter)!"
+                            : "Publisher never emitted \(letter)!")
+                })
+                .store(in: &subscriptions)
+        }
+        
+        example(of: "contains(where:)") {
+            struct Person {
+                let id: Int
+                let name: String
+            }
+            
+            let people = [
+                (456, "Scott Gardner"),
+                (123, "Shai Mishali"),
+                (777, "Marin Todorov"),
+                (214, "Florent Pillet")
+            ]
+            .map(Person.init)
+            .publisher
+            
+            people
+                .contains(where: { $0.id == 800 })
+                .sink(receiveValue: { contains in
+                    // 4
+                    print(contains ? "Criteria matches!"
+                            : "Couldn't find a match for the criteria")
+                })
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func allSatisfy() {
+        // allSatisfy: upstream의 값들이 조건과 모두 일치하는지 여부를 bool값으로 내보낸다. greedy로 동작하며 upstream publisher가 finish 이벤트를 내보낼때까지 기다린다. 하나의 값이라도 조건을 통과하지 못하면 false를 내보내고 그 즉시 구독을 취소한다.
+        example(of: "allSatisfy") {
+            let publisher = stride(from: 0, to: 5, by: 2).publisher
+            
+            publisher
+                .print("publisher")
+                .allSatisfy { $0 % 2 == 0 }
+                .sink { allEven in
+                    print(allEven ? "All numbers are even" : "Something is odd...")
+                }
+                .store(in: &subscriptions)
+        }
+    }
+    
+    private func reduce() {
+        // 3챕터의 scan과 비슷하다. 하지만 scan은 축적된 값을 매번 내보내는 반면, reduce는 upstream publisher가 finished 이벤트를 받았을 때 딱 한번 축적된 값을 내보낸다.
+        example(of: "reduce") {
+            let publisher = ["Hel", "lo", " ", "Wor", "ld", "!"].publisher
+            
+            publisher
+                .print("publisher")
+                .reduce("") { accumulator, value in
+                    accumulator + value
+                }
+                // .reduce("", +) 위와 동일.
+                .sink(receiveValue: { print("Reduced into: \($0)") })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -246,6 +380,22 @@ extension Chapter07_ViewController {
     
     @objc private func didTapSeventhEx() {
         outputIn()
+    }
+    
+    @objc private func didTapEighthEx() {
+        count()
+    }
+    
+    @objc private func didTapNinethEx() {
+        contains()
+    }
+    
+    @objc private func didTapTenthEx() {
+        allSatisfy()
+    }
+    
+    @objc private func didTapEleventhEx() {
+        reduce()
     }
 }
 
