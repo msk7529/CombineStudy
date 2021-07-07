@@ -56,6 +56,12 @@ final class Chapter06_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var challengeBtn: commonBtn = {
+        let button: commonBtn = .init(title: "challenge")
+        button.addTarget(self, action: #selector(didTapChallenge), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     private let buttonSubject = PassthroughSubject<Void, TimeoutError>()
@@ -85,6 +91,7 @@ final class Chapter06_ViewController: UIViewController {
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
         self.view.addSubview(seventhExBtn)
+        self.view.addSubview(challengeBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -120,6 +127,11 @@ final class Chapter06_ViewController: UIViewController {
         seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
         seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        challengeBtn.topAnchor.constraint(equalTo: seventhExBtn.topAnchor).isActive = true
+        challengeBtn.leadingAnchor.constraint(equalTo: seventhExBtn.trailingAnchor, constant: 30).isActive = true
+        challengeBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        challengeBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func deltaTime(_ date: Date) -> String {
@@ -389,6 +401,34 @@ extension Chapter06_ViewController {
             subject.feed(with: typingHelloWorld)
         }
     }
+    
+    private func challenge() {
+        let aaa: [Character] = ["1", "2", "3", "4"]
+        let _ = String(aaa) // Char배열을 이런식으로 String 변환이 가능하구나 ..
+        
+        example(of: "Challenge") {
+            let subject = PassthroughSubject<Int, Never>()
+            
+            let strings = subject
+                .collect(.byTime(DispatchQueue.main, .seconds(0.5)))    // 0.5초 단위로 그룹화해서
+                .map { numArray in
+                    String(numArray.map { Character(Unicode.Scalar($0)!) }) // String으로 변환
+                }
+            
+            let spaces = subject.measureInterval(using: DispatchQueue.main) // 문자사이의 시간간격을 층정하기 위한 publisher
+                .map { interval in
+                    interval > 0.9 ? "😒" : ""
+                }
+            
+            strings
+                .merge(with: spaces)
+                .filter { !$0.isEmpty }
+                .sink { print($0) }
+                .store(in: &subscriptions)
+            
+            startFeeding(subject: subject)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -425,6 +465,10 @@ extension Chapter06_ViewController {
     @objc private func didTapSevenEx() {
         measuringTime()
     }
+    
+    @objc private func didTapChallenge() {
+        challenge()
+    }
 }
 
 private extension Subject where Output == String {
@@ -442,5 +486,27 @@ private extension Subject where Output == String {
         DispatchQueue.main.asyncAfter(deadline: .now() + lastDelay + 1.5) { [unowned self] in
             self.send(completion: .finished)
         }
+    }
+}
+
+public func startFeeding<S>(subject: S) where S: Subject, S.Output == Int {
+    // sample data!
+    let samples: [(TimeInterval, Int)] = [
+        (0.05, 67), (0.10, 111), (0.15, 109), (0.20, 98), (0.25, 105), (0.30, 110), (0.35, 101),
+        (1.50, 105), (1.55, 115),
+        (2.60, 99), (2.65, 111), (2.70, 111), (2.75, 108), (2.80, 33)
+    ]
+    
+    var lastDelay: TimeInterval = 0
+    
+    for entry in samples {
+        lastDelay = entry.0
+        DispatchQueue.main.asyncAfter(deadline: .now() + entry.0) {
+            subject.send(entry.1)
+        }
+    }
+    
+    DispatchQueue.main.asyncAfter(deadline: .now() + lastDelay + 0.5) {
+        subject.send(completion: .finished)
     }
 }
