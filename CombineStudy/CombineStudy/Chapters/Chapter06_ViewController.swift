@@ -50,6 +50,12 @@ final class Chapter06_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var seventhExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "seventhEx")
+        button.addTarget(self, action: #selector(didTapSevenEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     private let buttonSubject = PassthroughSubject<Void, TimeoutError>()
@@ -78,6 +84,7 @@ final class Chapter06_ViewController: UIViewController {
         self.view.addSubview(fourthExBtn)
         self.view.addSubview(fifthExBtn)
         self.view.addSubview(sixthExBtn)
+        self.view.addSubview(seventhExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -108,6 +115,11 @@ final class Chapter06_ViewController: UIViewController {
         sixthExBtn.leadingAnchor.constraint(equalTo: fifthExBtn.trailingAnchor, constant: 30).isActive = true
         sixthExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         sixthExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        seventhExBtn.topAnchor.constraint(equalTo: fourthExBtn.bottomAnchor, constant: 30).isActive = true
+        seventhExBtn.leadingAnchor.constraint(equalTo: fourthExBtn.leadingAnchor).isActive = true
+        seventhExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        seventhExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     private func deltaTime(_ date: Date) -> String {
@@ -332,6 +344,51 @@ extension Chapter06_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func measuringTime() {
+        let typingHelloWorld: [(TimeInterval, String)] = [
+            (0.0, "H"),
+            (0.2, "He"),
+            (0.4, "Hel"),
+            (0.6, "Hell"),
+            (0.8, "Hello"),
+            (1.0, "Hello "),
+            (2.5, "Hello W"),
+            (2.8, "Hello Wo"),
+            (3.2, "Hello Wor"),
+            (3.6, "Hello Worl"),
+            (5.0, "Hello World")
+        ]
+        
+        example(of: "Measuring Time") {
+            let start = Date()
+            
+            let subject = PassthroughSubject<String, Never>()
+            
+            let measureSubject = subject.measureInterval(using: DispatchQueue.main)
+            // upstream publisher에 의해 내보내진 두 개의 연속적인 값 사이에 경과된 시간(TimeInterval)을 내보낸다.
+            // RunLoop.main을 사용하면 초 단위, DispatchQueue.main을 사용하면 나노초단위
+            // 일반적인 경우 DispatchQueue.main을 사용하는것이 좋다고 함.
+            
+            subject
+                .sink { [weak self] string in
+                    guard let self = self else { return }
+                    
+                    print("+\(self.deltaTime(start))s: Subject emitted: \(string)")
+                }
+                .store(in: &subscriptions)
+
+            measureSubject
+                .sink { [weak self] in
+                    guard let self = self else { return }
+                    
+                    print("+\(self.deltaTime(start))s: Measure emitted: \(Double($0.magnitude) / 1_000_000_000.0)")
+                }
+                .store(in: &subscriptions)
+            
+            subject.feed(with: typingHelloWorld)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -363,6 +420,10 @@ extension Chapter06_ViewController {
     
     @objc private func didTapEventButton() {
         buttonSubject.send()
+    }
+    
+    @objc private func didTapSevenEx() {
+        measuringTime()
     }
 }
 
