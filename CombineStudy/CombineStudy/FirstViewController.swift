@@ -45,6 +45,12 @@ class FirstViewController: UIViewController {
         return button
     }()
     
+    private lazy var chapter9Btn: commonBtn = {
+        let button: commonBtn = .init(title: "Chapter09")
+        button.addTarget(self, action: #selector(moveChapter9), for: .touchUpInside)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -61,6 +67,7 @@ class FirstViewController: UIViewController {
         self.view.addSubview(chapter5Btn)
         self.view.addSubview(chapter6Btn)
         self.view.addSubview(chapter7Btn)
+        self.view.addSubview(chapter9Btn)
         
         chapter2Btn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         chapter2Btn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -91,6 +98,11 @@ class FirstViewController: UIViewController {
         chapter7Btn.leadingAnchor.constraint(equalTo: chapter6Btn.trailingAnchor, constant: 30).isActive = true
         chapter7Btn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         chapter7Btn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        chapter9Btn.topAnchor.constraint(equalTo: chapter5Btn.bottomAnchor, constant: 30).isActive = true
+        chapter9Btn.leadingAnchor.constraint(equalTo: chapter5Btn.leadingAnchor).isActive = true
+        chapter9Btn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        chapter9Btn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     // - MARK: Move to chapter examples
@@ -122,6 +134,11 @@ class FirstViewController: UIViewController {
     
     @objc private func moveChapter7() {
         let nextVC: Chapter07_ViewController = .init()
+        self.navigationController?.pushViewController(nextVC, animated: true)
+    }
+    
+    @objc private func moveChapter9() {
+        let nextVC: Chapter09_ViewController = .init()
         self.navigationController?.pushViewController(nextVC, animated: true)
     }
 }
