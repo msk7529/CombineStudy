@@ -16,6 +16,12 @@ final class Chapter10_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var secondExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "secondEx")
+        button.addTarget(self, action: #selector(didTapSecondEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -29,11 +35,17 @@ final class Chapter10_ViewController: UIViewController {
     
     private func initView() {
         self.view.addSubview(firstExBtn)
+        self.view.addSubview(secondExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
         firstExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         firstExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        secondExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
+        secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -61,6 +73,32 @@ extension Chapter10_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func performingSideEffets() {
+        example(of: "performingSideEffets") {
+            // handleEvents: publisher의 lifecycle에 있는 모든 이벤트를 인터셉트하여 각 단계에서 조치를 취할 수 있다. 디버깅할때 용이하게 쓸 수 있음
+            
+            let request = URLSession.shared
+                .dataTaskPublisher(for: URL(string: "https://www.raywenderlich.com/")!)
+            
+            request
+                .handleEvents(receiveSubscription: { _ in
+                    print("Network request will start")
+                }, receiveOutput: { _ in
+                    print("Network request data received")
+                }, receiveCancel: {
+                    print("Network request cancelled")
+                }, receiveRequest: { _ in
+                    print("Received request")
+                })
+                .sink(receiveCompletion: { completion in
+                    print("Sink received completion: \(completion)")
+                }, receiveValue: { (data, _ ) in
+                    print("Sink received data: \(data)")
+                })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -68,6 +106,10 @@ extension Chapter10_ViewController {
     
     @objc private func didTapFirstEx() {
         printEvent()
+    }
+    
+    @objc private func didTapSecondEx() {
+        performingSideEffets()
     }
 }
     
