@@ -38,6 +38,12 @@ final class Chapter09_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -52,6 +58,7 @@ final class Chapter09_ViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -62,6 +69,11 @@ final class Chapter09_ViewController: UIViewController {
         secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
         secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -108,6 +120,41 @@ extension Chapter09_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func multicast() {
+        example(of: "multicast") {
+            let url = URL(string: "https://www.raywenderlich.com")!
+            let publisher = URLSession.shared
+                .dataTaskPublisher(for: url)
+                .map(\.data)
+                .multicast { PassthroughSubject<Data, URLError>() }
+            // sink로 구독이 활성화되면 publisher가 작업을 바로 수행하게 되는데, 이럴때 Publisher에 여러 Subscriber가 붙는 경우 여러번 API를 수행하게 된다. 이를 방지하기 위해 multicast를 사용하여 API를 한번만 실행할 수 있도록 한다.
+            
+            publisher.sink(receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    print("Sink1 Retrieving data failed with error \(error)")
+                }
+            }, receiveValue: { object in
+                print("Sink1 Retrieved object \(object)")
+            })
+            .store(in: &subscriptions)
+            
+            publisher
+                .receive(on: DispatchQueue.main)    // upstream에 영향을 주는 subscribe(on:)과는 달리 downstream에 영향을 준다. 이렇게 하면 메인스레드에서 값을 받을 수 있다.
+                .sink(receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("Sink2 Retrieving data failed with error \(error)")
+                    }
+                }, receiveValue: { object in
+                    print("Sink2 Retrieved object \(object)")
+                })
+                .store(in: &subscriptions)
+            
+            publisher
+                .connect()
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -119,5 +166,9 @@ extension Chapter09_ViewController {
     
     @objc private func didTapSecondEx() {
         codableSupport()
+    }
+    
+    @objc private func didTapThirdEx() {
+        multicast()
     }
 }
