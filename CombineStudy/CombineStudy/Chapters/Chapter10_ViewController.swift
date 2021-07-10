@@ -22,6 +22,12 @@ final class Chapter10_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -36,6 +42,7 @@ final class Chapter10_ViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -46,6 +53,11 @@ final class Chapter10_ViewController: UIViewController {
         secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
         secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -99,6 +111,20 @@ extension Chapter10_ViewController {
                 .store(in: &subscriptions)
         }
     }
+    
+    private func breakPoint() {
+        example(of: "breakPoint") {
+            (1...12).publisher
+                .breakpoint(receiveOutput: { value in
+                    return value > 10 && value < 15
+                })
+                // upstream publisher가 내보낸 값중 조건을 만족하면 디버거로 중단되도록 한다.
+                .sink(receiveValue: {
+                    print($0)
+                })
+                .store(in: &subscriptions)
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -110,6 +136,10 @@ extension Chapter10_ViewController {
     
     @objc private func didTapSecondEx() {
         performingSideEffets()
+    }
+    
+    @objc private func didTapThirdEx() {
+        breakPoint()
     }
 }
     
