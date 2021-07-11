@@ -22,6 +22,12 @@ final class Chapter13_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -36,6 +42,7 @@ final class Chapter13_ViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -46,6 +53,11 @@ final class Chapter13_ViewController: UIViewController {
         secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
         secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -121,6 +133,39 @@ extension Chapter13_ViewController {
             }
         }
     }
+    
+    private func future() {
+        // share, multicast 외에 결과값을 공유할 수 있는 추가적인 방법
+        // Future을 이용하면, subscriber들을 기다리지 않고 즉시 작업을 수행하며(단 한 번) 이 결과값을 여러 subscriber들에게 전달할 수 있다.
+        // 네트워크 요청의 결과를 공유할 때 유용할 듯(물론 share, multicast로도 가능)
+        
+        func performSomeWork() throws -> Int {
+            // Future에 의해 수행되는 함수(비동기 가능)
+            print("Performing some work and returning a result")
+            return 5
+        }
+        
+        // subscribers를 기다리지 않고 즉시 수행된다. 이것이 future의 특징. 클로저 안의 동작을 즉시 실행한다. 그리고 구독하면 그 값을 전달.
+        let future = Future<Int, Error> { fulfill in
+            do {
+                let result = try performSomeWork()
+                fulfill(.success(result))
+            } catch {
+                fulfill(.failure(error))
+            }
+        }
+        
+        print("Subscribing to future...")
+        
+        future
+            .sink(receiveCompletion: { _ in print("subscription1 completed")}, receiveValue: { print("subscription1 received: \($0)") })
+            .store(in: &subscriptions)
+        
+        future
+            // 작업을 두 번 수행하지 않고, 결과값을 받는다.
+            .sink(receiveCompletion: { _ in print("subscription2 completed") }, receiveValue: { print("subscription2 received: \($0)") })
+            .store(in: &subscriptions)
+    }
 }
 
 // - MARK: Button Actions
@@ -132,5 +177,9 @@ extension Chapter13_ViewController {
     
     @objc private func didTapSecondEx() {
         multicast()
+    }
+    
+    @objc private func didTapThirdEx() {
+        future()
     }
 }
