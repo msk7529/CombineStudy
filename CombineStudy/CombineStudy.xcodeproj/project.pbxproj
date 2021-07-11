@@ -26,6 +26,7 @@
 		C2D698772699DDA400F57BD3 /* Chapter09_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D698762699DDA300F57BD3 /* Chapter09_ViewController.swift */; };
 		C2D69879269A071C00F57BD3 /* Chapter10_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D69878269A071C00F57BD3 /* Chapter10_ViewController.swift */; };
 		C2D6987B269A172F00F57BD3 /* Chapter11_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D6987A269A172F00F57BD3 /* Chapter11_ViewController.swift */; };
+		C2D6987D269B4D6D00F57BD3 /* Chapter12_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D6987C269B4D6D00F57BD3 /* Chapter12_ViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 		C2D698762699DDA300F57BD3 /* Chapter09_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter09_ViewController.swift; sourceTree = "<group>"; };
 		C2D69878269A071C00F57BD3 /* Chapter10_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter10_ViewController.swift; sourceTree = "<group>"; };
 		C2D6987A269A172F00F57BD3 /* Chapter11_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter11_ViewController.swift; sourceTree = "<group>"; };
+		C2D6987C269B4D6D00F57BD3 /* Chapter12_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter12_ViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 				C2D698762699DDA300F57BD3 /* Chapter09_ViewController.swift */,
 				C2D69878269A071C00F57BD3 /* Chapter10_ViewController.swift */,
 				C2D6987A269A172F00F57BD3 /* Chapter11_ViewController.swift */,
+				C2D6987C269B4D6D00F57BD3 /* Chapter12_ViewController.swift */,
 			);
 			path = Chapters;
 			sourceTree = "<group>";
@@ -200,6 +203,7 @@
 				C20CBDD12690D3C40088BB7A /* Chapter02_Challenge.swift in Sources */,
 				C20CBC22268CDC4F0088BB7A /* CombineStudy.xcdatamodeld in Sources */,
 				C20CBC32268CE37F0088BB7A /* Utils.swift in Sources */,
+				C2D6987D269B4D6D00F57BD3 /* Chapter12_ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
