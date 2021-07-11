@@ -165,7 +165,7 @@ extension Chapter13_ViewController {
             // 작업을 두 번 수행하지 않고, 결과값을 받는다.
             .sink(receiveCompletion: { _ in print("subscription2 completed") }, receiveValue: { print("subscription2 received: \($0)") })
             .store(in: &subscriptions)
-    }
+    } 
 }
 
 // - MARK: Button Actions
