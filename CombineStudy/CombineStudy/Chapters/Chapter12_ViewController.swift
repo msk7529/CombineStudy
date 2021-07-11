@@ -22,6 +22,12 @@ final class Chapter12_ViewController: UIViewController {
         return button
     }()
     
+    private lazy var thirdExBtn: commonBtn = {
+        let button: commonBtn = .init(title: "thirdEx")
+        button.addTarget(self, action: #selector(didTapThirdEx), for: .touchUpInside)
+        return button
+    }()
+    
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -36,6 +42,7 @@ final class Chapter12_ViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(secondExBtn)
+        self.view.addSubview(thirdExBtn)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -46,6 +53,11 @@ final class Chapter12_ViewController: UIViewController {
         secondExBtn.leadingAnchor.constraint(equalTo: firstExBtn.trailingAnchor, constant: 30).isActive = true
         secondExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         secondExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        thirdExBtn.topAnchor.constraint(equalTo: firstExBtn.topAnchor).isActive = true
+        thirdExBtn.leadingAnchor.constraint(equalTo: secondExBtn.trailingAnchor, constant: 30).isActive = true
+        thirdExBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        thirdExBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
 }
 
@@ -86,6 +98,27 @@ extension Chapter12_ViewController {
             obj.integerProperty = 200
         }
     }
+    
+    private func observableObject() {
+        example(of: "ObservableObject") {
+            class MonitorObject: ObservableObject {
+                @Published var someProperty: Bool = false
+                @Published var someOtherProperty: String = ""
+            }
+            
+            let object = MonitorObject()
+            
+            object
+                .objectWillChange
+                .sink { print("object will change") }
+                // 어떤 프로퍼티가 어떻게 변했는지는 알 수 없다.
+                // viewModel이 변경되면 view를 갱신해야 할 때 유용할 듯
+                .store(in: &subscriptions)
+            
+            object.someProperty = true  // false로 설정해도 object는 변화한 걸로 인식된다.
+            object.someOtherProperty = "Hello world"
+        }
+    }
 }
 
 // - MARK: Button Actions
@@ -97,5 +130,9 @@ extension Chapter12_ViewController {
     
     @objc private func didTapSecondEx() {
         KVOcompliantProperties()
+    }
+    
+    @objc private func didTapThirdEx() {
+        observableObject()
     }
 }
