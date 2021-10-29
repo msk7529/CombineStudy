@@ -200,7 +200,11 @@ extension Chapter03_ViewController {
         example(of: "tryMap") {
             Just("Directory name that does not exist")
                 .tryMap { try FileManager.default.contentsOfDirectory(atPath: $0) }
-                .sink(receiveCompletion: { print($0) }, receiveValue: { print($0) })
+                .sink(receiveCompletion: {
+                    print($0)   // 여기만 호출됨.
+                }, receiveValue: {
+                    print($0)
+                })
                 .store(in: &subscriptions)
         }
     }
