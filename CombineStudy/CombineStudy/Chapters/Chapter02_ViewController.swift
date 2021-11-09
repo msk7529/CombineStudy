@@ -378,9 +378,9 @@ extension Chapter02_ViewController {
     private func helloCurrentValueSubject() {
         var subscriptions = Set<AnyCancellable>()   // Set에 저장된 구독들은 Set가 메모리에서 해제될때, 즉, 여기선 함수가 종료될때 자동으로 취소된다.
         
-        let subject = CurrentValueSubject<Int, Never>(0)
+        let subject: CurrentValueSubject<Int, Never> = .init(0)
         
-        subject.print()
+        subject
             .sink(receiveValue: { print($0) })
             .store(in: &subscriptions)
         
