@@ -75,6 +75,12 @@ class FirstViewController: UIViewController {
         return button
     }()
     
+    private lazy var BugFixBtn: commonBtn = {
+        let button: commonBtn = .init(title: "BugFix")
+        button.addTarget(self, action: #selector(moveBugFix), for: .touchUpInside)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -96,6 +102,7 @@ class FirstViewController: UIViewController {
         self.view.addSubview(chapter11Btn)
         self.view.addSubview(chapter12Btn)
         self.view.addSubview(chapter13Btn)
+        self.view.addSubview(BugFixBtn)
         
         chapter2Btn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         chapter2Btn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -151,6 +158,11 @@ class FirstViewController: UIViewController {
         chapter13Btn.leadingAnchor.constraint(equalTo: chapter12Btn.trailingAnchor, constant: 30).isActive = true
         chapter13Btn.widthAnchor.constraint(equalToConstant: 100).isActive = true
         chapter13Btn.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        BugFixBtn.topAnchor.constraint(equalTo: chapter13Btn.topAnchor).isActive = true
+        BugFixBtn.leadingAnchor.constraint(equalTo: chapter13Btn.trailingAnchor, constant: 30).isActive = true
+        BugFixBtn.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        BugFixBtn.heightAnchor.constraint(equalToConstant: 30).isActive = true
     }
     
     // - MARK: Move to chapter examples
@@ -207,6 +219,11 @@ class FirstViewController: UIViewController {
     
     @objc private func moveChapter13() {
         let nextVC: Chapter13_ViewController = .init()
+        self.navigationController?.pushViewController(nextVC, animated: true)
+    }
+    
+    @objc private func moveBugFix() {
+        let nextVC: BugFixViewController = .init()
         self.navigationController?.pushViewController(nextVC, animated: true)
     }
 }
