@@ -8,10 +8,6 @@
 import UIKit
 import Combine
 
-final class ObserveViewModel {
-    @Published var progressValue: Float = 0.01
-}
-
 final class BugFixViewController: UIViewController {
 
     private lazy var firstExBtn: commonBtn = {
@@ -34,8 +30,14 @@ final class BugFixViewController: UIViewController {
         return progressView
     }()
     
-    let viewModel: ObserveViewModel = .init()
-    
+    private lazy var slider: RoundedSlider = {
+        let slider: RoundedSlider = .init(height: 4, minTrackColor: .yellow, maxTrackColor: .systemGray)
+        slider.value = 0.3
+        slider.isUserInteractionEnabled = false
+        slider.translatesAutoresizingMaskIntoConstraints = false
+        return slider
+    }()
+        
     private var subscriptions: Set<AnyCancellable> = .init()
     
     override func viewDidLoad() {
@@ -50,6 +52,7 @@ final class BugFixViewController: UIViewController {
     private func initView() {
         self.view.addSubview(firstExBtn)
         self.view.addSubview(progressView)
+        self.view.addSubview(slider)
         
         firstExBtn.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 30).isActive = true
         firstExBtn.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 30).isActive = true
@@ -61,29 +64,49 @@ final class BugFixViewController: UIViewController {
         progressView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10).isActive = true
         progressView.heightAnchor.constraint(equalToConstant: 4).isActive = true
         
-        //bindViewModel()
+        slider.topAnchor.constraint(equalTo: firstExBtn.bottomAnchor, constant: 10).isActive = true
+        slider.leadingAnchor.constraint(equalTo: firstExBtn.leadingAnchor).isActive = true
+        slider.widthAnchor.constraint(equalToConstant: 300).isActive =  true
+        slider.heightAnchor.constraint(equalToConstant: 4).isActive = true
     }
     
-    private func bindViewModel() {
-        viewModel.$progressValue
-            .sink { [weak self] value in
-                self?.progressView.progress = value
-                self?.progressView.progressTintColor = UIColor(red: 0xFE, green: 0xE5, blue: 0x00, alpha: 1.00)
-                //self?.progressView.progressTintColor = value > 0.1 ? .red : .yellow
-            }.store(in: &subscriptions)
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        
+        firstExBtn.layer.applyShadow(color: .red, x: 0, y: 2, blur: 5, spread: 0)
     }
-    
 }
 
 extension BugFixViewController {
     @objc
     private func didTapProgressView() {
-        let just: Just<Float> = .init(0.5)
+        let just: Just<Float> = .init(0.01)
 
         just.sink(receiveCompletion: { failure in
             print("Received completion", failure)
         }, receiveValue: { [weak self] value in
+            // value가 1.0 일때, thumb가 slider의 오른쪽끝을 벗어나는 문제가 있어서 0.99까지만 주어야 함.
+            self?.progressView.progress = value
             self?.progressView.progressTintColor = .red
+            self?.slider.value = min(0.99, value)
+            self?.slider.remakeThumb(withColor: .red)
         }).store(in: &subscriptions)
+    }
+}
+
+private extension CALayer {
+    func applyShadow(color: UIColor, x: CGFloat, y: CGFloat, blur: CGFloat, spread: CGFloat) {
+        masksToBounds = false
+        shadowOpacity = 0
+        shadowColor = color.cgColor
+        shadowOffset = CGSize(width: x, height: y)
+        shadowRadius = blur / 2
+        if spread == 0 {
+            shadowPath = nil
+        } else {
+            let dxx = -spread
+            let rect = bounds.insetBy(dx: dxx, dy: dxx)
+            shadowPath = UIBezierPath(rect: rect).cgPath
+        }
     }
 }

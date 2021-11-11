@@ -22,6 +22,7 @@
 		C20CBDD72691FC6C0088BB7A /* Chapter04_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CBDD62691FC6C0088BB7A /* Chapter04_ViewController.swift */; };
 		C20CBDD926921F3F0088BB7A /* Chapter05_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20CBDD826921F3F0088BB7A /* Chapter05_ViewController.swift */; };
 		C26E2816273C025000C1AA34 /* BugFixViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C26E2815273C025000C1AA34 /* BugFixViewController.swift */; };
+		C26E281A273C501500C1AA34 /* RoundedSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C26E2819273C501500C1AA34 /* RoundedSlider.swift */; };
 		C2D697962694C02E00F57BD3 /* Chapter06_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D697952694C02E00F57BD3 /* Chapter06_ViewController.swift */; };
 		C2D6982D26961B1C00F57BD3 /* Chapter07_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D6982C26961B1C00F57BD3 /* Chapter07_ViewController.swift */; };
 		C2D698772699DDA400F57BD3 /* Chapter09_ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D698762699DDA300F57BD3 /* Chapter09_ViewController.swift */; };
@@ -49,6 +50,7 @@
 		C20CBDD62691FC6C0088BB7A /* Chapter04_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter04_ViewController.swift; sourceTree = "<group>"; };
 		C20CBDD826921F3F0088BB7A /* Chapter05_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter05_ViewController.swift; sourceTree = "<group>"; };
 		C26E2815273C025000C1AA34 /* BugFixViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BugFixViewController.swift; sourceTree = "<group>"; };
+		C26E2819273C501500C1AA34 /* RoundedSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundedSlider.swift; sourceTree = "<group>"; };
 		C2D697952694C02E00F57BD3 /* Chapter06_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter06_ViewController.swift; sourceTree = "<group>"; };
 		C2D6982C26961B1C00F57BD3 /* Chapter07_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter07_ViewController.swift; sourceTree = "<group>"; };
 		C2D698762699DDA300F57BD3 /* Chapter09_ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chapter09_ViewController.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				C2D6987C269B4D6D00F57BD3 /* Chapter12_ViewController.swift */,
 				C2D6987E269B62C300F57BD3 /* Chapter13_ViewController.swift */,
 				C26E2815273C025000C1AA34 /* BugFixViewController.swift */,
+				C26E2819273C501500C1AA34 /* RoundedSlider.swift */,
 			);
 			path = Chapters;
 			sourceTree = "<group>";
@@ -199,6 +202,7 @@
 				C2D6982D26961B1C00F57BD3 /* Chapter07_ViewController.swift in Sources */,
 				C2D69879269A071C00F57BD3 /* Chapter10_ViewController.swift in Sources */,
 				C20CBC1C268CDC4F0088BB7A /* FirstViewController.swift in Sources */,
+				C26E281A273C501500C1AA34 /* RoundedSlider.swift in Sources */,
 				C2D6987F269B62C300F57BD3 /* Chapter13_ViewController.swift in Sources */,
 				C20CBDD32690E40A0088BB7A /* Chapter03_ViewController.swift in Sources */,
 				C20CBDD72691FC6C0088BB7A /* Chapter04_ViewController.swift in Sources */,
